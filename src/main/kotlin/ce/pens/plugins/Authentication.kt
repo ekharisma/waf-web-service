@@ -3,9 +3,7 @@ package ce.pens.plugins
 import ce.pens.constant.Constant
 import ce.pens.constant.Constant.audience
 import ce.pens.constant.Constant.issuer
-import ce.pens.constant.Constant.realm
 import ce.pens.constant.Constant.secret
-import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

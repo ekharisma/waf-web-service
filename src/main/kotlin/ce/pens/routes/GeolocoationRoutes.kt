@@ -16,7 +16,6 @@ import io.ktor.server.routing.*
 import io.netty.handler.codec.http.HttpResponseStatus
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
 
 fun Route.geolocationRoutes() {
     route("/location") {

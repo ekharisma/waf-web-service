@@ -36,4 +36,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation(kotlin("script-runtime"))
+
+    implementation("org.apache.kafka:kafka-clients:3.2.0")
+    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
 }
