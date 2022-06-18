@@ -6,13 +6,13 @@ import ce.pens.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.contentnegotiation.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         configureRouting()
         configureSerialization()
         configureAuthentication()
-
         install(CallLogging)
     }.start(wait = true)
 }
