@@ -1,7 +1,7 @@
 package ce.pens
 
-import ce.pens.feature.KafkaBackgroundJob
-import
+import ce.pens.feature.BackgroundJob
+import ce.pens.kafka.buildConsumer
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import ce.pens.plugins.*
@@ -19,8 +19,10 @@ fun main() {
 }
 
 fun Application.configureKafkaJobs() {
-    install(KafkaBackgroundJob) {
-        name = "Kafka-Consumer-Job"
-        job = buildConsumer
+    install(BackgroundJob.KafkaBackgroundJob) {
+        name = "Kafka-Background-Job"
+        job = buildConsumer<String, String>(
+            "localhost:9092", "kafka-producer", "kafka-group", "sniffer-data"
+        )
     }
 }

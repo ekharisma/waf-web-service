@@ -1,10 +1,10 @@
-package ce.pens.model
+package ce.pens.entity
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GeoLocationResponse(
+data class GeoLocation(
     @SerialName("ip")
     val ip: String,
     @SerialName("success")

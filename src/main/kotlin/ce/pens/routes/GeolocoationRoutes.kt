@@ -1,8 +1,8 @@
 package ce.pens.routes
 
-import ce.pens.model.GeoLocationResponse
-import ce.pens.model.IpAddress
-import ce.pens.model.LocationResponse
+import ce.pens.entity.GeoLocation
+import ce.pens.entity.IpAddress
+import ce.pens.entity.response.LocationResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -27,12 +27,13 @@ fun Route.geolocationRoutes() {
             call.application.environment.log.info("Response: ${response.status}")
             if (response.status.value == HttpResponseStatus.OK.code()) {
                 val geoLocationResponse : String = response.body()
-                val obj = Json.decodeFromString<GeoLocationResponse>(geoLocationResponse)
+                val obj = Json.decodeFromString<GeoLocation>(geoLocationResponse)
                 call.respond(HttpStatusCode.OK, LocationResponse(
                     longitude = obj.longitude,
                     latitude = obj.latitude,
                     country = obj.country
-                ))
+                )
+                )
             }
             call.respond(HttpStatusCode.InternalServerError)
         }

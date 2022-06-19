@@ -1,20 +1,23 @@
 package ce.pens.kafka
 
-import ce.pens.feature.CloseableJob
-import io.ktor.server.application.*
-import io.ktor.utils.io.core.*
+import ce.pens.entity.NetworkActivityClass
+import ce.pens.event.NetworkActivityEvent
+import ce.pens.feature.ClosableJob
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.util.Properties
 import mu.KotlinLogging
 import org.apache.kafka.common.errors.WakeupException
+import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Consumer<K, V>(private val consumer: KafkaConsumer<K, V>, topic: String) : CloseableJob {
+class Consumer<K, V>(private val consumer: KafkaConsumer<K, V>, topic: String) : ClosableJob {
     private val logger = KotlinLogging.logger {}
     private val closed: AtomicBoolean = AtomicBoolean(false)
     private val finished = CountDownLatch(1)
@@ -32,11 +35,14 @@ class Consumer<K, V>(private val consumer: KafkaConsumer<K, V>, topic: String) :
     }
 
     override fun run() {
+        logger.info { "Consumer running..." }
        try {
            while (!closed.get()) {
                val records = consumer.poll(Duration.of(1000, ChronoUnit.MILLIS))
                for (record in records) {
-                   logger.info { "topic: ${record.topic()} : ${record.partition()}" }
+                   logger.info { "Retrieve topic: ${record.topic()} : ${record.partition()}" }
+                   logger.info { "Process message" }
+                   val obj = Json.decodeFromString<NetworkActivityEvent>(record.value().toString())
                }
                if (!records.isEmpty) {
                    consumer.commitAsync {offsets, exception ->
@@ -63,14 +69,12 @@ class Consumer<K, V>(private val consumer: KafkaConsumer<K, V>, topic: String) :
     }
 }
 
-fun <K, V> buildConsumer(environment: ApplicationEnvironment): Consumer<K, V> {
-    val consumerConfig = environment.config.config("ktor.kafka.consumer")
-    val consumerProps = Properties().apply {
-        this[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = consumerConfig.property("bootstrap.servers").getList()
-        this[ConsumerConfig.CLIENT_ID_CONFIG] = consumerConfig.property("client.id").getString()
-        this[ConsumerConfig.GROUP_ID_CONFIG] = consumerConfig.property("group.id").getString()
-        this[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = consumerConfig.property("key.deserializer").getString()
-        this[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = consumerConfig.property("value.deserializer").getString()
-    }
-    return Consumer(KafkaConsumer(consumerProps), consumerConfig.property("topic").getString())
+fun <K, V> buildConsumer(host: String, clientId: String, groupId: String, topic: String): Consumer<K, V> {
+    val consumerProps = Properties()
+    consumerProps.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, host)
+    consumerProps.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, clientId)
+    consumerProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+    consumerProps.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+    consumerProps.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+    return Consumer(KafkaConsumer(consumerProps), topic)
 }

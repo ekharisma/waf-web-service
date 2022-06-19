@@ -1,4 +1,4 @@
-package ce.pens.model
+package ce.pens.entity.response
 
 @kotlinx.serialization.Serializable
 data class LocationResponse(

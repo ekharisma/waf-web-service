@@ -2,4 +2,4 @@ package ce.pens.feature
 
 import io.ktor.utils.io.core.*
 
-interface CloseableJob : Closeable, Runnable
+interface ClosableJob : Closeable, Runnable

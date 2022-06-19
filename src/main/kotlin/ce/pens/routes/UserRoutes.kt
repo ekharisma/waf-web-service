@@ -1,7 +1,7 @@
 package ce.pens.routes
 
-import ce.pens.model.User
-import ce.pens.model.userStorage
+import ce.pens.entity.User
+import ce.pens.entity.userStorage
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*

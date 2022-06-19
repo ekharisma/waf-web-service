@@ -1,7 +1,7 @@
 package ce.pens.routes
 
-import ce.pens.model.User
-import ce.pens.model.userStorage
+import ce.pens.entity.User
+import ce.pens.entity.userStorage
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*

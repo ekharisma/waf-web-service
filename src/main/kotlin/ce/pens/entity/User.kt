@@ -1,4 +1,4 @@
-package ce.pens.model
+package ce.pens.entity
 
 import kotlinx.serialization.Serializable
 
