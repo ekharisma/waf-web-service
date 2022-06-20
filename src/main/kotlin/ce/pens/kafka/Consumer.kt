@@ -1,6 +1,5 @@
 package ce.pens.kafka
 
-import ce.pens.entity.NetworkActivityClass
 import ce.pens.event.NetworkActivityEvent
 import ce.pens.feature.ClosableJob
 import kotlinx.serialization.decodeFromString
@@ -43,6 +42,7 @@ class Consumer<K, V>(private val consumer: KafkaConsumer<K, V>, topic: String) :
                    logger.info { "Retrieve topic: ${record.topic()} : ${record.partition()}" }
                    logger.info { "Process message" }
                    val obj = Json.decodeFromString<NetworkActivityEvent>(record.value().toString())
+                   processMessage(obj)
                }
                if (!records.isEmpty) {
                    consumer.commitAsync {offsets, exception ->
