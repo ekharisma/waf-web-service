@@ -9,4 +9,7 @@
     </root>
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+    <logger name="org.springframework" level="OFF"/>
+    <logger name="org.apache" level="OFF"/>
+    <logger name="kafka" level="OFF"/>
 </configuration>

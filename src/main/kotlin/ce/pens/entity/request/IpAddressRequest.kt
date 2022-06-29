@@ -1,8 +1,8 @@
-package ce.pens.entity
+package ce.pens.entity.request
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class IpAddress(
+data class IpAddressRequest(
     val ipAddress: String,
 )

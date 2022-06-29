@@ -1,7 +1,7 @@
 package ce.pens.routes
 
 import ce.pens.entity.GeoLocation
-import ce.pens.entity.IpAddress
+import ce.pens.entity.request.IpAddressRequest
 import ce.pens.entity.response.LocationResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -20,8 +20,8 @@ import kotlinx.serialization.json.Json
 fun Route.geolocationRoutes() {
     route("/location") {
         post {
-            val ipAddress = call.receive<IpAddress>()
-            val url = "https://ipwhois.app/json/${ipAddress.ipAddress}"
+            val ipAddressRequest = call.receive<IpAddressRequest>()
+            val url = "https://ipwhois.app/json/${ipAddressRequest.ipAddress}"
             val client = HttpClient(CIO)
             val response: HttpResponse = client.get(url)
             call.application.environment.log.info("Response: ${response.status}")

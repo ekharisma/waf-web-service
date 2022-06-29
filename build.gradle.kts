@@ -1,6 +1,9 @@
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
+val exposed_version: String by project
+val postgresql_version: String by project
+val hikari_version: String by project
 
 plugins {
     application
@@ -37,6 +40,16 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation(kotlin("script-runtime"))
 
+    // kafka
     implementation("org.apache.kafka:kafka-clients:3.2.0")
+    // logging
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
+    // database
+    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation("org.postgresql:postgresql:$postgresql_version")
+    // array manipulation
+    implementation("org.jetbrains.kotlinx:multik-api:0.1.1")
+    implementation("org.jetbrains.kotlinx:multik-default:0.1.1")
 }

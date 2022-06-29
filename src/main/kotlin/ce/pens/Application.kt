@@ -1,6 +1,7 @@
 package ce.pens
 
 import ce.pens.feature.BackgroundJob
+import ce.pens.feature.DatabaseClient
 import ce.pens.kafka.buildConsumer
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -15,6 +16,7 @@ fun main() {
         configureAuthentication()
         configureKafkaJobs()
         install(CallLogging)
+        DatabaseClient.init()
     }.start(wait = true)
 }
 

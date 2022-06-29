@@ -1,12 +1,15 @@
 package ce.pens.entity
 
-import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.Table
 
-@Serializable
 data class User(
-    val id: String,
     val username: String,
     val password: String
 )
 
-val userStorage = mutableListOf<User>()
+object Users: Table() {
+    val id = integer("id").autoIncrement()
+    val username = varchar("name", 64)
+    val password = varchar("password", 512)
+    override val primaryKey = PrimaryKey(id)
+}

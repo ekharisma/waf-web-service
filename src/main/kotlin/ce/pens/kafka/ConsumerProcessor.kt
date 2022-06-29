@@ -1,19 +1,22 @@
 package ce.pens.kafka
 
 import ce.pens.constant.DecisionTreeModel
+import ce.pens.entity.NetworkActivity
 import ce.pens.entity.TrainFeature
 import ce.pens.event.NetworkActivityEvent
+import ce.pens.repository.networkActivity.NetworkRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.PriorityBlockingQueue
 
-val featureQueue = PriorityBlockingQueue<DoubleArray>()
+val featureMutableList = mutableListOf<DoubleArray>()
 
-fun processMessage(message: NetworkActivityEvent) = runBlocking {
-    val featureTrainingDeffered = async {
+fun processMessage(message: NetworkActivityEvent) = runBlocking(Dispatchers.Default) {
+    val dao = NetworkRepository()
+    val featureTrainingDeferred = async {
         parseEvent(message)
     }
-    val featureTraining = featureTrainingDeffered.await()
+    val featureTraining = featureTrainingDeferred.await()
     val inferenceArray = doubleArrayOf(
         featureTraining.dstPort.toDouble(),
         featureTraining.protocol.toDouble(),
@@ -100,11 +103,56 @@ fun processMessage(message: NetworkActivityEvent) = runBlocking {
         featureTraining.flowIdleMin
     )
 
-    val resultDeffered = async {
-        DecisionTreeModel.score(inferenceArray)
+    if (queueHandler(inferenceArray)) {
+        val resultDeferred = async {
+            DecisionTreeModel.score(inferenceArray)
+        }
+        val result = resultDeferred.await()
+        val largestResult = getIndexOfLargest(result)
+
+        dao.create(NetworkActivity(
+            ipSrc = message.srcIp,
+            portSrc = message.srcPort,
+            ipDst = message.dstIp,
+            portDst = message.dstPort,
+            networkActivityName = getActivityName(largestResult)
+        ))
+    }
+}
+
+//fun normalise(inputFeature: DoubleArray) {
+//    for (indexList in featureMutableList.indices) {
+//        for (features in featureMutableList[indexList].size) {
+//
+//        }
+//    }
+//}
+
+fun queueHandler(features: DoubleArray): Boolean {
+    if (featureMutableList.size >= 5) {
+        featureMutableList.removeAt(0)
+    }
+    featureMutableList.add(features)
+
+    return featureMutableList.size == 5
+}
+
+fun getActivityName(largestResult: Int): String =
+    when (largestResult) {
+        0 -> "Benign"
+        1 -> "FTP-BruteForce"
+        2 -> "SSH-Bruteforce"
+        3 -> "DDOS attack-HOIC"
+        4 -> "Bot"
+        5 -> "DoS attacks-GoldenEye"
+        6 -> "DoS attacks-Slowloris"
+        7 -> "DDOS attack-LOIC-UDP"
+        8 -> "Brute Force -Web"
+        9 -> "Brute Force -XSS"
+        10 -> "SQL Injection"
+        else -> "Unknown"
     }
 
-}
 
 fun parseEvent(message: NetworkActivityEvent): TrainFeature {
     return TrainFeature(
@@ -176,4 +224,13 @@ fun parseEvent(message: NetworkActivityEvent): TrainFeature {
         flowIdleMax = message.flowIdleMax,
         flowIdleMin = message.flowIdleMin,
     )
+}
+
+fun getIndexOfLargest(array: DoubleArray?): Int {
+    if (array == null || array.size == 0) return -1 // null or empty
+    var largest = 0
+    for (i in 1 until array.size) {
+        if (array[i] > array[largest]) largest = i
+    }
+    return largest // position of the first largest found
 }
