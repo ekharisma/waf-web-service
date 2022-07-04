@@ -111,11 +111,14 @@ fun processMessage(message: NetworkActivityEvent) = runBlocking(Dispatchers.Defa
         val largestResult = getIndexOfLargest(result)
 
         dao.create(NetworkActivity(
+            id = message.flowId,
             ipSrc = message.srcIp,
             portSrc = message.srcPort,
             ipDst = message.dstIp,
             portDst = message.dstPort,
-            networkActivityName = getActivityName(largestResult)
+            networkActivityName = getActivityName(largestResult),
+            timestamp = message.startTime,
+            createdAt = ""
         ))
     }
 }

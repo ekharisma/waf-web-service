@@ -40,6 +40,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation(kotlin("script-runtime"))
 
+    // cors
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
     // kafka
     implementation("org.apache.kafka:kafka-clients:3.2.0")
     // logging
@@ -49,7 +51,5 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.postgresql:postgresql:$postgresql_version")
-    // array manipulation
-    implementation("org.jetbrains.kotlinx:multik-api:0.1.1")
-    implementation("org.jetbrains.kotlinx:multik-default:0.1.1")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
 }

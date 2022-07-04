@@ -29,7 +29,7 @@ fun Route.authRoute() {
                     status = "not found",
                     message = "fail to find user with username: ${user.username}"
                 )
-                call.respond(HttpStatusCode.NotFound, Json.encodeToString(payload))
+                return@post call.respond(HttpStatusCode.NotFound, payload)
             }
             logger.info { "Pass DB: ${userDB!!.password}" }
             logger.info { "Pass Request: ${user.password}" }
@@ -39,7 +39,7 @@ fun Route.authRoute() {
                     status = "access denied",
                     message = "wrong username or password"
                 )
-                call.respond(HttpStatusCode.Unauthorized, Json.encodeToString(payload))
+                return@post call.respond(HttpStatusCode.Unauthorized, payload)
             }
             val token = JWT.create()
                 .withClaim("username", userDB.username)
@@ -49,7 +49,7 @@ fun Route.authRoute() {
                 status = "success",
                 message = token
             )
-            call.respond(HttpStatusCode.OK, Json.encodeToString(payload))
+            return@post call.respond(HttpStatusCode.OK, payload)
         }
     }
     route("/register") {
@@ -66,15 +66,13 @@ fun Route.authRoute() {
                     status = "created",
                     message = "user: ${user.username} created"
                 )
-                val payload = Json.encodeToString(response)
-                call.respondText(payload, status = HttpStatusCode.Created)
+                return@post call.respond(HttpStatusCode.Created, response)
             } else {
                 val response = WebResponse(
                     status = "failed",
                     message = "user ${user.username} already exist"
                 )
-                val payload = Json.encodeToString(response)
-                call.respondText(payload, status = HttpStatusCode.Conflict)
+                return@post call.respond(HttpStatusCode.Conflict, response)
             }
         }
     }

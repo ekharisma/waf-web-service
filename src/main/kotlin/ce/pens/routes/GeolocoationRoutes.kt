@@ -28,14 +28,14 @@ fun Route.geolocationRoutes() {
             if (response.status.value == HttpResponseStatus.OK.code()) {
                 val geoLocationResponse : String = response.body()
                 val obj = Json.decodeFromString<GeoLocation>(geoLocationResponse)
-                call.respond(HttpStatusCode.OK, LocationResponse(
+                return@post call.respond(HttpStatusCode.OK, LocationResponse(
                     longitude = obj.longitude,
                     latitude = obj.latitude,
                     country = obj.country
                 )
                 )
             }
-            call.respond(HttpStatusCode.InternalServerError)
+            return@post call.respond(HttpStatusCode.InternalServerError)
         }
     }
 }

@@ -6,8 +6,10 @@ import ce.pens.kafka.buildConsumer
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import ce.pens.plugins.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.cors.routing.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
@@ -16,6 +18,13 @@ fun main() {
         configureAuthentication()
         configureKafkaJobs()
         install(CallLogging)
+        install(CORS) {
+            allowCredentials = true
+            anyHost()
+            allowHeader(HttpHeaders.ContentType)
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+        }
         DatabaseClient.init()
     }.start(wait = true)
 }

@@ -2,6 +2,7 @@ package ce.pens.plugins
 
 import ce.pens.routes.authRoute
 import ce.pens.routes.geolocationRoutes
+import ce.pens.routes.networkActivityRoute
 import ce.pens.routes.userRouting
 import io.ktor.server.routing.*
 import io.ktor.http.*
@@ -17,5 +18,6 @@ fun Application.configureRouting() {
         userRouting()
         authRoute()
         geolocationRoutes()
+        networkActivityRoute()
     }
 }
