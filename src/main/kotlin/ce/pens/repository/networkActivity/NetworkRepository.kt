@@ -101,7 +101,7 @@ class NetworkRepository : BaseRepository<NetworkActivity, NetworkActivity> {
     private suspend fun getRecordByDay(): Long {
         logger.info { "Getting monthly record" }
         val date = LocalDateTime.now()
-        val fromDate = LocalDateTime.parse("${date.year}-${formatString(date.monthValue)}-${formatString(date.dayOfMonth)}T00:00:00")
+        val fromDate =   LocalDateTime.parse("${date.year}-${formatString(date.monthValue)}-${formatString(date.dayOfMonth)}T00:00:00")
         val toDate = LocalDateTime.parse("${date.year + 1}-${formatString(date.monthValue+1)}-${formatString(date.dayOfMonth + 1)}T00:00:00")
         logger.info { "Date: $fromDate - $toDate" }
         return dbQuery {
