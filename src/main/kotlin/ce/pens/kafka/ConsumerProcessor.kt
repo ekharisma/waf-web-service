@@ -3,13 +3,17 @@ package ce.pens.kafka
 import ce.pens.constant.DecisionTreeModel
 import ce.pens.entity.NetworkActivity
 import ce.pens.entity.TrainFeature
+import ce.pens.entity.meanList
+import ce.pens.entity.stdList
 import ce.pens.event.NetworkActivityEvent
 import ce.pens.repository.networkActivity.NetworkRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import kotlin.math.tanh
 
-val featureMutableList = mutableListOf<DoubleArray>()
+val logger = KotlinLogging.logger {  }
 
 fun processMessage(message: NetworkActivityEvent) = runBlocking(Dispatchers.Default) {
     val dao = NetworkRepository()
@@ -22,122 +26,100 @@ fun processMessage(message: NetworkActivityEvent) = runBlocking(Dispatchers.Defa
         featureTraining.protocol.toDouble(),
         featureTraining.flowDuration.toDouble(),
         featureTraining.fwdPktCount.toDouble(),
-
         featureTraining.bwdPktCount.toDouble(),
         featureTraining.fwdPktStats,
         featureTraining.bwdPktStats,
         featureTraining.fwdPktMax,
-
         featureTraining.fwdPktMin,
         featureTraining.fwdPktMean,
         featureTraining.fwdPktStd,
-
         featureTraining.bwdPktMax,
         featureTraining.bwdPktMin,
         featureTraining.bwdPktMean,
         featureTraining.bwdPktStd,
-
         featureTraining.flowBytePs,
         featureTraining.flowPktPs,
         featureTraining.flowIATMean,
         featureTraining.flowIATStd,
-
         featureTraining.flowIATMax,
         featureTraining.flowIATMin,
         featureTraining.fwdIATSum,
         featureTraining.fwdIATMean,
-
         featureTraining.fwdIATStd,
         featureTraining.fwdIATMax,
         featureTraining.fwdIATMin,
         featureTraining.bwdIATSum,
-
         featureTraining.bwdIATMean,
         featureTraining.bwdIATStd,
         featureTraining.bwdIATMax,
         featureTraining.bwdIATMin,
-
         featureTraining.fwdPshCount.toDouble(),
         featureTraining.fwdHeaderLen,
         featureTraining.bwdHeaderLen,
         featureTraining.fwdPktPS,
-
         featureTraining.bwdPktPS,
         featureTraining.PktLenMin,
         featureTraining.PktLenMax,
         featureTraining.pktLenMean,
-
         featureTraining.pktLenStd,
         featureTraining.pktLenvar,
         featureTraining.finFlagCnt.toDouble(),
         featureTraining.synFlagCnt.toDouble(),
-
         featureTraining.rstFlagCnt.toDouble(),
         featureTraining.pshFlagCnt.toDouble(),
         featureTraining.ackFlagCnt.toDouble(),
         featureTraining.urgFlagCnt.toDouble(),
-
         featureTraining.eceFlagCnt.toDouble(),
         featureTraining.avgPktSize,
         featureTraining.fwdAvgSegmentSize,
         featureTraining.bwdAvgSegmentSize,
-
         featureTraining.fwdSubFlowPkt.toDouble(),
         featureTraining.fwdSubFlowBytes.toDouble(),
         featureTraining.bwdSubFlowPkt.toDouble(),
         featureTraining.bwdSubFlowBytes.toDouble(),
-
         featureTraining.initWinBytesFwd.toDouble(),
         featureTraining.initWinBytesBwd.toDouble(),
         featureTraining.fwdActData.toDouble(),
         featureTraining.fwdSegSize.toDouble(),
-
         featureTraining.flowActiveMean,
         featureTraining.flowActiveStd,
         featureTraining.flowActiveMax,
         featureTraining.flowActiveMin,
-
         featureTraining.flowIdleMean,
         featureTraining.flowIdleStd,
         featureTraining.flowIdleMax,
         featureTraining.flowIdleMin
     )
 
-    if (queueHandler(inferenceArray)) {
-        val resultDeferred = async {
-            DecisionTreeModel.score(inferenceArray)
-        }
-        val result = resultDeferred.await()
-        val largestResult = getIndexOfLargest(result)
+    val normalisedArray = normalise(inferenceArray)
 
-        dao.create(NetworkActivity(
-            id = message.flowId,
-            ipSrc = message.srcIp,
-            portSrc = message.srcPort,
-            ipDst = message.dstIp,
-            portDst = message.dstPort,
-            networkActivityName = getActivityName(largestResult),
-            timestamp = message.startTime,
-            createdAt = ""
-        ))
+    val resultDeferred = async {
+        DecisionTreeModel.score(normalisedArray.toDoubleArray())
     }
+    val result = resultDeferred.await()
+    val largestResult = getIndexOfLargest(result)
+
+    dao.create(NetworkActivity(
+        id = message.flowId,
+        ipSrc = message.srcIp,
+        portSrc = message.srcPort,
+        ipDst = message.dstIp,
+        portDst = message.dstPort,
+        networkActivityName = getActivityName(largestResult),
+        timestamp = message.startTime,
+        createdAt = ""
+    ))
 }
 
-//fun normalise(inputFeature: DoubleArray) {
-//    for (indexList in featureMutableList.indices) {
-//        for (features in featureMutableList[indexList].size) {
-//
-//        }
-//    }
-//}
-
-fun queueHandler(features: DoubleArray): Boolean {
-    if (featureMutableList.size >= 5) {
-        featureMutableList.removeAt(0)
+fun normalise(inputFeature: DoubleArray): MutableList<Double> {
+    val normalisedFeatureList = mutableListOf<Double>()
+    logger.info { "normalising array..." }
+    for (i in inputFeature.indices) {
+        val normalisedFeature = 0.5 * (tanh(0.01 * ((inputFeature[i] - meanList(i) / stdList(i)))) + 1)
+        normalisedFeatureList.add(normalisedFeature)
     }
-    featureMutableList.add(features)
 
-    return featureMutableList.size == 5
+    return normalisedFeatureList
 }
 
 fun getActivityName(largestResult: Int): String =

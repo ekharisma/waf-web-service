@@ -1,0 +1,1 @@
+docker build -t webserver-waf:1.0.0 .

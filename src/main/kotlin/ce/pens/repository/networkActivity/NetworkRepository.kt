@@ -116,8 +116,7 @@ class NetworkRepository : BaseRepository<NetworkActivity, NetworkActivity> {
     suspend fun getAll(limit: Int): List<NetworkActivity> {
         logger.info { "Get Records with $limit limit" }
         return dbQuery {
-            NetworkActivities.selectAll().limit(limit).map { resultRowToNetworkActivity(it) }
-        }
+            NetworkActivities.selectAll().toList().takeLast(10).map { resultRowToNetworkActivity(it) } }
     }
 
     override suspend fun delete(id: Int) {

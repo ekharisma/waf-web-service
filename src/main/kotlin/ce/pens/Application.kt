@@ -12,7 +12,7 @@ import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.cors.routing.*
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+    embeddedServer(Netty, port = 8082, host = "0.0.0.0") {
         configureRouting()
         configureSerialization()
         configureAuthentication()
